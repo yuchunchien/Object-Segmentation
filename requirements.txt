@@ -1,4 +1,9 @@
 numpy
-datetime
-torch
-torchvision
+scipy
+matplotlib
+tensorflow
+tensorflow_gpu
+keras
+matplotlib
+Pillow
+h5py

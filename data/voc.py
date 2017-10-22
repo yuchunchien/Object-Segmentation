@@ -1,50 +1,16 @@
-import numpy as np
+import subprocess
+import os
 
-def pascal_classes():
-    return {
-        'aeroplane': 1,  'bicycle'  : 2,  'bird'       : 3,  'boat'        : 4,
-        'bottle'   : 5,  'bus'      : 6,  'car'        : 7,  'cat'         : 8,
-        'chair'    : 9,  'cow'      : 10, 'diningtable': 11, 'dog'         : 12,
-        'horse'    : 13, 'motorbike': 14, 'person'     : 15, 'potted-plant': 16,
-        'sheep'    : 17, 'sofa'     : 18, 'train'      : 19, 'tv/monitor'  : 20
-    }
+_CMDS = [
+	# download pascal voc 2012 dataset
+	"wget http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar",
+	"tar -xvf VOCtrainval_11-May-2012.tar",
+	# create symlinks
+	"ln -s ./VOCdevkit/VOC2012/SegmentationClass labels",
+	"ln -s ./VOCdevkit/VOC2012/JPEGImages images",
+]
 
-def pascal_palette():
-    return {
-        (  0,   0,   0): 0,
-        (128,   0,   0): 1,
-        (  0, 128,   0): 2,
-        (128, 128,   0): 3,
-        (  0,   0, 128): 4,
-        (128,   0, 128): 5,
-        (  0, 128, 128): 6,
-        (128, 128, 128): 7,
-        ( 64,   0,   0): 8,
-        (192,   0,   0): 9,
-        ( 64, 128,   0): 10,
-        (192, 128,   0): 11,
-        ( 64,   0, 128): 12,
-        (192,   0, 128): 13,
-        ( 64, 128, 128): 14,
-        (192, 128, 128): 15,
-        (  0,  64,   0): 16,
-        (128,  64,   0): 17,
-        (  0, 192,   0): 18,
-        (128, 192,   0): 19,
-        (  0,  64, 128): 20
-    }
-
-def convert_from_color_segmentation(arr_3d):
-    arr_2d = np.zeros((arr_3d.shape[0], arr_3d.shape[1]), dtype=np.uint8)
-    palette = pascal_palette()
-
-    for c, i in palette.items():
-        m = np.all(arr_3d == np.array(c).reshape(1, 1, 3), axis=2)
-        arr_2d[m] = i
-
-    return arr_2d
-
-def get_id_classes(classes):
-    all_classes = pascal_classes()
-    id_classes = [all_classes[c] for c in classes]
-    return id_classes
+if __name__ == "__main__":
+	for c in _CMDS:
+		subprocess.call(c.split())
+	print('Downloaded VOC 2012 successfully.')

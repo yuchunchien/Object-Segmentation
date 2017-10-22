@@ -1,56 +1,40 @@
+from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
-import argparse
-import numpy as np
+
 import os
+import sys 
+import tensorflow as tf
+import tensorflow.contrib.slim as slim
+from data.davis import *
 
-import torch
-import torchvision
-import torch.nn as nn
-import torch.nn.parallel
-import torch.backends.cudnn as cudnn
-import torch.optim as optim
-import torch.utils.data
-import torchvision.datasets as dset
-import torchvision.transforms as transforms
-import torchvision.utils as vutils
-from torch.autograd import Variable
+# user-defined parameters
+gpu_id = 0
+tf.logging.set_verbosity(tf.logging.INFO)
 
-# flags
-parser = argparse.ArgumentParser()
-parser.add_argument('--dataset',    required=True, help='specify dataset to use')
-parser.add_argument('--dataroot',   required=True, default='./data/', help='path to dataset')
-parser.add_argument('--cuda',       action='store_true', help='enable cuda')
-parser.add_argument('--workers',    type=int, default=2, help='number of data loading workers')
-parser.add_argument('--batchSize',  type=int, default=64, help='input batch size')
-parser.add_argument('--iters',      type=int, default=100, help='epochs to train for')
-parser.add_argument('--ngpu',       type=int, default=1, help='number of GPUs to use')
-parser.add_argument('--experiment', type=str, default=None, help='where to store samples and models')
-args = parser.parse_args()
-print("Arguments\n: {0}".format(args))
+# import data
+root_folder = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.abspath(root_folder))
 
-# create samples folder if it does not exist
-if args.experiment is None:
-    args.experiment = 'samples'
-os.system('mkdir {0}'.format(args.experiment))
+# training parameters
+store_memory = True
+data_aug = True
+init_lr = 1e-3
+boundaries = [10000, 15000, 25000, 30000, 40000]
+values = [init_lr * 10**-i for i in range(len(boundaries)+1)]
 
-# pytorch configurations
-torch.manual_seed(np.random.randint(1000))
-cudnn.benchmark = True
+# DAVIS dataset
+train_file = './data/train_list.txt'
+dataset = DavisDataset(train_file, None, './data/DAVIS/', 
+					   store_memory=store_memory, data_aug=data_aug)
 
-if torch.cuda.is_available() and not args.cuda:
-    print('Warning: CUDA device available, run with --cuda')
-
-dataloader = torch.utils.data.DataLoader(
-    dataset=dataset,
-    batch_size=args.batchSize,
-    shuffle=True,
-    num_workers=int(args.workers)
-)
-
-# training
-for epoch in range(args.iters):
-    data_iter = iter(dataloader)
+# train network
+with tf.Graph().as_default():
+	with tf.device('/gpu:' + str(gpu_id)):
+		global_step = tf.Variable(0, name='global_step', trainable=False)
+		learning_rate = tf.train.piecewise_constant(global_step, boundaries, values)
+		# ... to be completed ...
 
 
-    # checkpoints
-    torch.save()
+if __name__ == '__main__':
+	tf.app.run()
